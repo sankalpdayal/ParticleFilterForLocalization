@@ -113,21 +113,19 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		
 	for (int i=0; i<num_particles; i++){
 		std::vector<LandmarkObs> observations_in_world;
+		observations_in_world.resize(observations.size());
 		for (unsigned int j=0; j< observations.size(); j++){
-			LandmarkObs _landmarkObs;
-			_landmarkObs.x = particles[i].x + observations[j].x * cos(particles[i].theta) - observations[j].y * sin(particles[i].theta);
-			_landmarkObs.y = particles[i].y + observations[j].y * sin(particles[i].theta) + observations[j].y * cos(particles[i].theta);
-			_landmarkObs.id = observations[j].id;
-			observations_in_world.push_back(_landmarkObs);
+			observations_in_world[j].x = particles[i].x + observations[j].x * cos(particles[i].theta) - observations[j].y * sin(particles[i].theta);
+			observations_in_world[j].y = particles[i].y + observations[j].y * sin(particles[i].theta) + observations[j].y * cos(particles[i].theta);
+			observations_in_world[j].id = observations[j].id;
 		}
 		
 		std::vector<LandmarkObs> predicted;
+		predicted.resize(map_landmarks.landmark_list.size());
 		for (unsigned int j=0; j< map_landmarks.landmark_list.size(); j++){
-			LandmarkObs _landmarkObs;
-			_landmarkObs.x = map_landmarks.landmark_list[j].x_f;
-			_landmarkObs.y = map_landmarks.landmark_list[j].y_f;
-			_landmarkObs.id = map_landmarks.landmark_list[j].id_i;
-			predicted.push_back(_landmarkObs);
+			predicted[j].x = map_landmarks.landmark_list[j].x_f;
+			predicted[j].y = map_landmarks.landmark_list[j].y_f;
+			predicted[j].id = map_landmarks.landmark_list[j].id_i;
 		}
 		dataAssociation(predicted, observations_in_world);
 		double log_prob = 0.0;
@@ -135,11 +133,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
-			if ((delx*delx + dely*dely) < sensor_range*sensor_range)
+			if ((delx*delx + dely*dely) < sensor_range*sensor_range){
 				log_prob += delx*delx/sigmaxx + dely*dely/sigmayy;
-			else
+			}
+			else{
 				log_prob += 100;//some large number
-				
+			}	
 		}
 		particles[i].weight = exp(-log_prob/2.0);
 		sum_weights += particles[i].weight;
