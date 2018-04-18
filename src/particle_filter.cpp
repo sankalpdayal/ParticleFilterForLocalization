@@ -140,6 +140,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				log_prob += 100;//some large number
 			}*/	
 		}
+		cout << log_prob << endl;
 		particles[i].weight = log_prob;//exp(-log_prob/2.0);
 		sum_weights += particles[i].weight;
 	}
