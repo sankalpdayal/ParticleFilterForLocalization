@@ -158,7 +158,7 @@ void ParticleFilter::resample() {
 	discrete_distribution<> dist_particles(weights.begin(), weights.end());
 	std::vector<Particle> particles_temp;
 	particles_temp.resize(num_particles);
-	for (int i = 1; i < num_particles; i++){
+	for (int i = 0; i < num_particles; i++){
 		particles_temp[i]= particles[dist_particles(gen)];
 	}
 	particles = particles_temp;
