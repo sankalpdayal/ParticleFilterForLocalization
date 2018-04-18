@@ -17,6 +17,7 @@
 
 #include "particle_filter.h"
 
+#define EPS 0.00001 
 using namespace std;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
@@ -135,7 +136,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
 			//if ((delx*delx + dely*dely) < sensor_range*sensor_range){
-			prob *= coefficient*exp(-(delx*delx/sigmaxx/2 + dely*dely/sigmayy/2));
+			double lm_weight = coefficient * exp( -( delx*delx/(2*sigmaxx) + (dely*dely/(2*sigmayy)) ) );
+			if (lm_weight == 0) {
+				prob *= EPS;
+			}else {
+				prob *= lm_weight;
+			}
 			//}
 			/*else{
 				prob += 100;//some large number
@@ -172,6 +178,11 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<i
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
+
+	//Clear the previous associations
+	particle.associations.clear();
+	particle.sense_x.clear();
+	particle.sense_y.clear();
 
     particle.associations= associations;
     particle.sense_x = sense_x;
