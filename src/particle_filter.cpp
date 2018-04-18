@@ -108,7 +108,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	double sum_weights = 0.0;
 	double sigmaxx = std_landmark[0]*std_landmark[0];
 	double sigmayy = std_landmark[1]*std_landmark[1];
-	double coefficient  = 1.0/(2*M_PI*std_landmark[0]*std_landmark[1]);
 		
 	for (int i=0; i<num_particles; i++){
 		std::vector<LandmarkObs> observations_in_world;
@@ -149,7 +148,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double delx = observations_in_world[j].x - mu_x;
 			double dely = observations_in_world[j].y - mu_y;
 
-			double lm_weight = coefficient * exp( -( delx*delx/(2*sigmaxx) + (dely*dely/(2*sigmayy)) ) );
+			double lm_weight = exp( -( delx*delx/(2*sigmaxx) + (dely*dely/(2*sigmayy)) ) );
 			if (lm_weight == 0) {
 				prob *= EPS;
 			}else {
@@ -159,24 +158,20 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			sense_x.push_back(observations_in_world[j].x);
 			sense_y.push_back(observations_in_world[j].y);
 		}
-		particles[i].weight = prob;//exp(-prob/2.0);
+		particles[i].weight = prob;
 		particles[i] = SetAssociations(particles[i], associations, sense_x, sense_y);
 		sum_weights += prob;
 	}
-	//cout <<"Sum Weight:"<<sum_weights<<endl;
+	for (int i=0; i<num_particles; i++){
+		particles[i].weight /= sum_weights; //coefficient 1.0/(2*MI_PI*std_landmark[0]*std_landmark[1]) will cancel here
+		weights[i] = particles[i].weight;
+	}
 }
 
 void ParticleFilter::resample() {
 	// TODO: Resample particles with replacement with probability proportional to their weight. 
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
-	
-	weights.clear();
-	for (int i=0; i<num_particles; i++){
-		//particles[i].weight /= sum_weights; //coefficient 1.0/(2*PI*std_landmark[0]*std_landmark[1]) will cancel here
-		weights.push_back(particles[i].weight);
-	}
-	
 	discrete_distribution<int> dist_particles(weights.begin(), weights.end());
 	std::vector<Particle> particles_temp;
 	particles_temp.resize(num_particles);
