@@ -110,7 +110,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	double sum_weights = 0.0;
 	double sigmaxx = std_landmark[0]*std_landmark[0];
 	double sigmayy = std_landmark[1]*std_landmark[1];
-	double coefficient  = 1.0/(2*M_PI*std_landmark[0]*std_landmark[1])
+	double coefficient  = 1.0/(2*M_PI*std_landmark[0]*std_landmark[1]);
 		
 	for (int i=0; i<num_particles; i++){
 		std::vector<LandmarkObs> observations_in_world;
