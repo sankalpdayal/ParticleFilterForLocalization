@@ -142,7 +142,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			}*/	
 		}
 		particles[i].weight = prob;//exp(-prob/2.0);
-		sum_weights += particles[i].weight;
+		sum_weights += prob;
 	}
 	cout <<"Sum Weight:"<<sum_weights<<endl;
 	for (int i=0; i<num_particles; i++){
