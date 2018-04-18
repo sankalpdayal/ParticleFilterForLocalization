@@ -129,24 +129,24 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			predicted[j].id = map_landmarks.landmark_list[j].id_i;
 		}
 		dataAssociation(predicted, observations_in_world);
-		double log_prob = 1.0;
+		double prob = 1.0;
 		
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
-			if ((delx*delx + dely*dely) < sensor_range*sensor_range){
-				log_prob *= coefficient*exp(-(delx*delx/sigmaxx/2 + dely*dely/sigmayy/2));
-			}
+			//if ((delx*delx + dely*dely) < sensor_range*sensor_range){
+			prob *= coefficient*exp(-(delx*delx/sigmaxx/2 + dely*dely/sigmayy/2));
+			//}
 			/*else{
-				log_prob += 100;//some large number
+				prob += 100;//some large number
 			}*/	
 		}
-		particles[i].weight = log_prob;//exp(-log_prob/2.0);
+		particles[i].weight = prob;//exp(-prob/2.0);
 		sum_weights += particles[i].weight;
 	}
-	cout <<"Weight:"<<sum_weights<<endl;
+	cout <<"Sum Weight:"<<sum_weights<<endl;
 	for (int i=0; i<num_particles; i++){
-		particles[i].weight /= sum_weights; //coefficient 1.0/(2*PI*std_landmark[0]*std_landmark[1]) will cancel here
+		//particles[i].weight /= sum_weights; //coefficient 1.0/(2*PI*std_landmark[0]*std_landmark[1]) will cancel here
 		weights[i] = particles[i].weight;
 	}
 }
