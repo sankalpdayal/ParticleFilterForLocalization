@@ -114,11 +114,11 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 		
 		std::vector<LandmarkObs> predicted;
-		for (int j=0; j< map_landmarks.size(); j++){
+		for (int j=0; j< map_landmarks.landmark_list.size(); j++){
 			LandmarkObs _landmarkObs;
-			_landmarkObs.x = map_landmarks[j].x_f;
-			_landmarkObs.y = map_landmarks[j].y_f;
-			_landmarkObs.id = map_landmarks[j].id_i;
+			_landmarkObs.x = map_landmarks.landmark_list[j].x_f;
+			_landmarkObs.y = map_landmarks.landmark_list[j].y_f;
+			_landmarkObs.id = map_landmarks.landmark_list[j].id_i;
 			predicted.push_back(_landmarkObs);
 		}
 		dataAssociation(predicted, observations_in_world);
@@ -143,7 +143,7 @@ void ParticleFilter::resample() {
 	std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.0,1.0);
   
-	max_w = weights[0];
+	double max_w = weights[0];
 	for (int i = 1; i < num_particles; i++){
 		if (max_w < weights[i])
 			max_w = weights[i];
@@ -152,8 +152,8 @@ void ParticleFilter::resample() {
 	for (int i = 1; i < num_particles; i++){
 		beta += distribution(generator) * 2.0 * max_w;
 		while (beta > weights[index]){
-			beta -= weights[index]
-			index = (index + 1) % num_particles
+			beta -= weights[index];
+			index = (index + 1) % num_particles;
 		}
 		particles_temp.push_back(particles[index]);
 	}
@@ -171,6 +171,8 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<i
     particle.associations= associations;
     particle.sense_x = sense_x;
     particle.sense_y = sense_y;
+	
+	return particle;
 }
 
 string ParticleFilter::getAssociations(Particle best)
