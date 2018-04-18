@@ -131,7 +131,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 		cout << "Before id:" << observations_in_world[0].id << endl;
 		dataAssociation(predicted, observations_in_world);
-		cout << "After id:" << observations_in_world[0].id;<< endl;
+		cout << "After id:" << observations_in_world[0].id << endl;
 		double log_prob = 1.0;
 		
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
