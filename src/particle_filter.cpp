@@ -135,6 +135,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
+			cout << "delxy: "<<delx<<dely<<endl;
 			//if ((delx*delx + dely*dely) < sensor_range*sensor_range){
 			double lm_weight = coefficient * exp( -( delx*delx/(2*sigmaxx) + (dely*dely/(2*sigmayy)) ) );
 			if (lm_weight == 0) {
