@@ -129,7 +129,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			int id = map_landmarks.landmark_list[j].id_i;
 			double range = (x-particles[i].x)*(x-particles[i].x) + (y-particles[i].y)*(y-particles[i].y);
 			if (range < sensor_range*sensor_range){
-				predicted.push_back(LandmarkObs{ id, x, y })
+				predicted.push_back(LandmarkObs{ id, x, y });
 			}
 		}
 		dataAssociation(predicted, observations_in_world);
