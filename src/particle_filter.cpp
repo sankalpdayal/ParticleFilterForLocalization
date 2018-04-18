@@ -110,6 +110,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	double sum_weights = 0.0;
 	double sigmaxx = std_landmark[0]*std_landmark[0];
 	double sigmayy = std_landmark[1]*std_landmark[1];
+	double coefficient  = 1.0/(2*M_PI*std_landmark[0]*std_landmark[1])
 		
 	for (int i=0; i<num_particles; i++){
 		std::vector<LandmarkObs> observations_in_world;
@@ -133,19 +134,17 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
-			cout << "delxy:" << delx << ',' << dely << endl;
 			if ((delx*delx + dely*dely) < sensor_range*sensor_range){
-				log_prob *= exp(-(delx*delx/sigmaxx/2 + dely*dely/sigmayy/2));
+				log_prob *= coefficient*exp(-(delx*delx/sigmaxx/2 + dely*dely/sigmayy/2));
 			}
 			/*else{
 				log_prob += 100;//some large number
 			}*/	
 		}
-		cout << log_prob << endl;
 		particles[i].weight = log_prob;//exp(-log_prob/2.0);
 		sum_weights += particles[i].weight;
 	}
-	cout <<sum_weights<<endl;
+	cout <<"Weight:"<<sum_weights<<endl;
 	for (int i=0; i<num_particles; i++){
 		particles[i].weight /= sum_weights; //coefficient 1.0/(2*PI*std_landmark[0]*std_landmark[1]) will cancel here
 		weights[i] = particles[i].weight;
