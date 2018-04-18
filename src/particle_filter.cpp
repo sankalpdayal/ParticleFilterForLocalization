@@ -25,7 +25,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
-	num_particles = 1000;
+	num_particles = 100;
 	
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
@@ -57,26 +57,20 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	normal_distribution<double> pos_y_pred(0.0, std_pos[1]);
 	normal_distribution<double> theta_pred(0.0, std_pos[2]);
 	
-	if (fabs(yaw_rate) > 0.0001){
-		for (int i=0; i<num_particles; i++){
-			particles[i].x += velocity/yaw_rate*(sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
-			particles[i].y += velocity/yaw_rate*(cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t));
+	for (int i=0; i<num_particles; i++){
+		if (fabs(yaw_rate) > 0.0001){
+			particles[i].x += velocity/yaw_rate*( sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
+			particles[i].y += velocity/yaw_rate*(-cos(particles[i].theta + yaw_rate*delta_t) + cos(particles[i].theta));
 			particles[i].theta += yaw_rate*delta_t;
 		}
-	}
-	else{
-		for (int i=0; i<num_particles; i++){
+		else{
 			particles[i].x += velocity*cos(particles[i].theta)*delta_t;
 			particles[i].y += velocity*sin(particles[i].theta)*delta_t;
 		}
-	}
-	for (int i=0; i<num_particles; i++){
 		particles[i].x += pos_x_pred(gen);
 		particles[i].y += pos_y_pred(gen);
-		particles[i].theta += theta_pred(gen);
-		
+		particles[i].theta += theta_pred(gen);	
 	}
-
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
@@ -85,10 +79,10 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 	for (unsigned int i=0; i<observations.size(); i++){
-		float dist_min = (observations[i].x-predicted[0].x)*(observations[i].x-predicted[0].x) + (observations[i].y-predicted[0].y)*(observations[i].y-predicted[0].y) ;
+		double dist_min = dist(observations[i].x, observations[i].y, predicted[0].x, predicted[0].y) ;
 		int min_index_id = predicted[0].id;
 		for (unsigned int j=1; j<predicted.size(); j++){
-			float dist = (observations[i].x-predicted[j].x)*(observations[i].x-predicted[j].x) + (observations[i].y-predicted[j].y)*(observations[i].y-predicted[j].y) ;
+			double dist = dist(observations[i].x, observations[i].y, predicted[j].x, predicted[j].y)  ;
 			if (dist < dist_min){
 				dist_min = dist;
 				min_index_id = predicted[j].id;
@@ -121,7 +115,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		observations_in_world.resize(observations.size());
 		for (unsigned int j=0; j< observations.size(); j++){
 			observations_in_world[j].x = particles[i].x + observations[j].x * cos(particles[i].theta) - observations[j].y * sin(particles[i].theta);
-			observations_in_world[j].y = particles[i].y + observations[j].y * sin(particles[i].theta) + observations[j].y * cos(particles[i].theta);
+			observations_in_world[j].y = particles[i].y + observations[j].x * sin(particles[i].theta) + observations[j].y * cos(particles[i].theta);
 			observations_in_world[j].id = observations[j].id;
 		}
 		
@@ -130,8 +124,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double x = map_landmarks.landmark_list[j].x_f;
 			double y = map_landmarks.landmark_list[j].y_f;
 			int id = map_landmarks.landmark_list[j].id_i;
-			double range = (x-particles[i].x)*(x-particles[i].x) + (y-particles[i].y)*(y-particles[i].y);
-			if (range < sensor_range*sensor_range){
+			double range = dist(x, y, particles[i].x, particles[i].y);
+			if (range < sensor_range){
 				predicted.push_back(LandmarkObs{ id, x, y });
 			}
 		}
