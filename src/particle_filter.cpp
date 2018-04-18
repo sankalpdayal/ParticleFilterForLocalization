@@ -108,6 +108,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   http://planning.cs.uiuc.edu/node99.html
 	
 	double sum_weights = 0.0;
+	double sigmaxx = std_landmark[0]*std_landmark[0];
+	double sigmayy = std_landmark[1]*std_landmark[1];
+		
 	for (int i=0; i<num_particles; i++){
 		std::vector<LandmarkObs> observations_in_world;
 		for (unsigned int j=0; j< observations.size(); j++){
@@ -128,13 +131,11 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 		dataAssociation(predicted, observations_in_world);
 		double log_prob = 0.0;
-		double sigmaxx = std_landmark[0]*std_landmark[0];
-		double sigmayy = std_landmark[1]*std_landmark[1];
 		
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
-			if (delx*delx + dely*dely) < sensor_range*sensor_range
+			if ((delx*delx + dely*dely) < sensor_range*sensor_range)
 				log_prob += delx*delx/sigmaxx + dely*dely/sigmayy;
 			else
 				log_prob += 100;//some large number
