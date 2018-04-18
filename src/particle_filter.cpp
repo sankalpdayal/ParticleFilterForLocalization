@@ -24,7 +24,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
-	num_particles = 500;
+	num_particles = 1000;
 	
 	default_random_engine gen;
 	normal_distribution<double> dist_x(x, std[0]);
@@ -119,8 +119,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			observations_in_world[j].y = particles[i].y + observations[j].y * sin(particles[i].theta) + observations[j].y * cos(particles[i].theta);
 			observations_in_world[j].id = observations[j].id;
 		}
-		cout << "Before x:" << observations[0].x << endl;
-		cout << "After x:" << observations_in_world[0].x << endl;
 		
 		std::vector<LandmarkObs> predicted;
 		predicted.resize(map_landmarks.landmark_list.size());
@@ -129,9 +127,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			predicted[j].y = map_landmarks.landmark_list[j].y_f;
 			predicted[j].id = map_landmarks.landmark_list[j].id_i;
 		}
-		cout << "Before id:" << observations_in_world[0].id << endl;
 		dataAssociation(predicted, observations_in_world);
-		cout << "After id:" << observations_in_world[0].id << endl;
 		double log_prob = 1.0;
 		
 		for (unsigned int j=0; j< observations_in_world.size(); j++){
@@ -147,6 +143,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		particles[i].weight = log_prob;//exp(-log_prob/2.0);
 		sum_weights += particles[i].weight;
 	}
+	cout <<sum_weights<<endl;
 	for (int i=0; i<num_particles; i++){
 		particles[i].weight /= sum_weights; //coefficient 1.0/(2*PI*std_landmark[0]*std_landmark[1]) will cancel here
 		weights[i] = particles[i].weight;
