@@ -123,9 +123,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 		dataAssociation(predicted, observations_in_world);
 		double prob = 1.0;
-		for (int j=0; j< observations.size(); j++){
-			double delx = observations[j].x - predicted[observations[j].id].x;
-			double dely = observations[j].y - predicted[observations[j].id].y;
+		for (int j=0; j< observations_in_world.size(); j++){
+			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
+			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
 			prob *= 1.0/(2*3.14*std_landmark[0]*std_landmark[1])*exp( -( delx*delx/(2*std_landmark[0]*std_landmark[0]) + dely*dely/(2*std_landmark[1]*std_landmark[1]) ) );
 		}
 		particles[i].weight = prob;
