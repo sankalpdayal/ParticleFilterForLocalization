@@ -123,30 +123,28 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 		
 		std::vector<LandmarkObs> predicted;
-		predicted.resize(map_landmarks.landmark_list.size());
 		for (unsigned int j=0; j< map_landmarks.landmark_list.size(); j++){
-			predicted[j].x = map_landmarks.landmark_list[j].x_f;
-			predicted[j].y = map_landmarks.landmark_list[j].y_f;
-			predicted[j].id = map_landmarks.landmark_list[j].id_i;
+			float x = map_landmarks.landmark_list[j].x_f;
+			float y = map_landmarks.landmark_list[j].y_f;
+			int id = map_landmarks.landmark_list[j].id_i;
+			double range = (x-particles[i].x)*(x-particles[i].x) + (y-particles[i].y)*(y-particles[i].y);
+			if (range < sensor_range*sensor_range){
+				predicted.push_back(LandmarkObs{ id, x, y })
+			}
 		}
 		dataAssociation(predicted, observations_in_world);
 		double prob = 1.0;
 		
-		for (unsigned int j=0; j< observations_in_world.size(); j++){
+		for (unsigned int j=0; j< observations.size(); j++){
 			double delx = observations_in_world[j].x - predicted[observations_in_world[j].id].x;
 			double dely = observations_in_world[j].y - predicted[observations_in_world[j].id].y;
 			cout << "delxy: "<<delx<<dely<<endl;
-			//if ((delx*delx + dely*dely) < sensor_range*sensor_range){
 			double lm_weight = coefficient * exp( -( delx*delx/(2*sigmaxx) + (dely*dely/(2*sigmayy)) ) );
 			if (lm_weight == 0) {
 				prob *= EPS;
 			}else {
 				prob *= lm_weight;
 			}
-			//}
-			/*else{
-				prob += 100;//some large number
-			}*/	
 		}
 		particles[i].weight = prob;//exp(-prob/2.0);
 		sum_weights += prob;
