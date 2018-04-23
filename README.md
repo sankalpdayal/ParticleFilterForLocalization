@@ -1,40 +1,20 @@
-# Overview
-This repository contains all the code needed to complete the final project for the Localization course in Udacity's Self-Driving Car Nanodegree.
-
-#### Submission
-All you will submit is your completed version of `particle_filter.cpp`, which is located in the `src` directory. You should probably do a `git pull` before submitting to verify that your project passes the most up-to-date version of the grading code (there are some parameters in `src/main.cpp` which govern the requirements on accuracy and run time.)
+# Localization Using Particle Filter
+Self-Driving Car Engineer Nanodegree Program
 
 ## Project Introduction
-Your robot has been kidnapped and transported to a new location! Luckily it has a map of this location, a (noisy) GPS estimate of its initial location, and lots of (noisy) sensor and control data.
+In this project the robot has been kidnapped and transported to a new location! Luckily it has a map of this location, a (noisy) GPS estimate of its initial location, and lots of (noisy) sensor and control data.
+In this project I have implemented a 2 dimensional particle filter in C++. My particle filter uses this map and initial localization information (analogous to what a GPS would provide). At each time step the filter gets the observation and control data. The filter uses them to predict the position of the car.
 
-In this project you will implement a 2 dimensional particle filter in C++. Your particle filter will be given a map and some initial localization information (analogous to what a GPS would provide). At each time step your filter will also get observation and control data. 
+#### Submission
+This repository contains all the code needed to complete the final project for the Localization course in Udacity's Self-Driving Car Nanodegree.
+I have submited my completed version of `particle_filter.cpp`, which is located in the `src` directory. 
 
 ## Running the Code
 This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases)
 
-This repository includes two files that can be used to set up and intall uWebSocketIO for either Linux or Mac systems. For windows you can use either Docker, VMware, or even Windows 10 Bash on Ubuntu to install uWebSocketIO.
+My setup is done using windows with docker installed. The remaining setup was done as a linux system.
 
-Once the install for uWebSocketIO is complete, the main program can be built and ran by doing the following from the project top directory.
-
-1. mkdir build
-2. cd build
-3. cmake ..
-4. make
-5. ./particle_filter
-
-Alternatively some scripts have been included to streamline this process, these can be leveraged by executing the following in the top directory of the project:
-
-1. ./clean.sh
-2. ./build.sh
-3. ./run.sh
-
-Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
-
-Note that the programs that need to be written to accomplish the project are src/particle_filter.cpp, and particle_filter.h
-
-The program main.cpp has already been filled out, but feel free to modify it.
-
-Here is the main protcol that main.cpp uses for uWebSocketIO in communicating with the simulator.
+The main protcol is that main.cpp uses for uWebSocketIO in communicating with the simulator.
 
 INPUT: values provided by the simulator to the c++ program
 
@@ -82,7 +62,7 @@ OUTPUT: values provided by the c++ program to the simulator
 ["best_particle_sense_y"] <= list of sensed y positions
 
 
-Your job is to build out the methods in `particle_filter.cpp` until the simulator output says:
+My job was to build out the methods in `particle_filter.cpp` until the simulator output says:
 
 ```
 Success! Your particle filter passed!
@@ -112,35 +92,40 @@ root
     |   particle_filter.h
 ```
 
-The only file you should modify is `particle_filter.cpp` in the `src` directory. The file contains the scaffolding of a `ParticleFilter` class and some associated methods. Read through the code, the comments, and the header file `particle_filter.h` to get a sense for what this code is expected to do.
+Following changes were done in the `particle_filter.cpp`
 
-If you are interested, take a look at `src/main.cpp` as well. This file contains the code that will actually be running your particle filter and calling the associated methods.
+1. Inside the `init` function 
+	1. I initialized num_particles 
+	2. Used the initial x, y, theta measurements and standard deviation to generate particles using gaussian sampling.
+2. Inside the `predictio`n function
+	1. Depending on the value of control yaw_rate decided what method to update position and theta is to be used.
+	2. Implemented the method to update position and theta for all particles using delta_t, velocity and yaw_rate
+	3. Added gaussian noise to the updated particles using the standard deviation.
+3. Inside the `updateWeights` function
+	1. Using the current position and theta of each particle, for each particle obtained the coordinates of observations in world.
+	2. Using the current position and theta of each particle, for each particle obtained the possible landmarks in range.
+	3. Using `dataAssociation` function associated closest landmark to each observation.
+	4. Depending on the position of observation and landmark positions in world refernce frame, obtained weight using Multivariate normal distribution
+	5. Obtained weight for a given particle by multiplying all the weights for each landmark.
+	6. Summed weights for every particle and used it normalize the final set of weights.
+	7. Landmark and observation associates were set using the `SetAssociations` function.
+4. Inside the `dataAssociation` function
+	1. For every observation, checked each landmark and associated the landmark that was closest.
+5. Inside the `resample` function
+	1. Used the discrete_distribution function of random class to select particle. 
+	2. For discrete_distribution, the probability was used as the weights updated in the updateWeights function.
 
-## Inputs to the Particle Filter
-You can find the inputs to the particle filter in the `data` directory. 
+One change was done in the `particle_filter.h`
+1. Variable `std::default_random_engine gen` was added to the class `ParticleFilter`. This allowed usage of single generator for all gaussian value generator function.
+	
+The code is well commented and in no manner when previous information is stored, neither loops are implemented. The implementation is done by the books and kept straight forward.
 
-#### The Map*
-`map_data.txt` includes the position of landmarks (in meters) on an arbitrary Cartesian coordinate system. Each row has three columns
-1. x position
-2. y position
-3. landmark id
+## Performance and Accuracy
 
-### All other data the simulator provides, such as observations and controls.
+1. **Accuracy**: The implemented particle filter was able to localize vehicle position and yaw to within the values specified in the parameters `max_translation_error` and `max_yaw_error` in `src/main.cpp`.
 
-> * Map data provided by 3D Mapping Solutions GmbH.
+2. **Performance**: The particle filter was able to complete execution within the time of 100 seconds.
 
-## Success Criteria
-If your particle filter passes the current grading code in the simulator (you can make sure you have the current version at any time by doing a `git pull`), then you should pass! 
+The result at the end of simulation is captured in the following screenshot. 
 
-The things the grading code is looking for are:
-
-
-1. **Accuracy**: your particle filter should localize vehicle position and yaw to within the values specified in the parameters `max_translation_error` and `max_yaw_error` in `src/main.cpp`.
-
-2. **Performance**: your particle filter should complete execution within the time of 100 seconds.
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
-
-
+![picture alt](./PFResult.JPG "PF result")
