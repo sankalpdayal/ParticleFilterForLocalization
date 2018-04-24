@@ -124,7 +124,7 @@ The code is well commented and in no manner when previous information is stored,
 
 1. **Accuracy**: The implemented particle filter was able to localize vehicle position and yaw to within the values specified in the parameters `max_translation_error` and `max_yaw_error` in `src/main.cpp`.
 
-2. **Performance**: The particle filter was able to complete execution within the time of 100 seconds.
+2. **Performance**: The particle filter was able to complete execution in about 62 seconds.
 
 The result at the end of simulation is captured in the following screenshot. 
 
